@@ -1,6 +1,7 @@
 ; @author	Thomas Schofield
 ;               Tyler Humbert
 ; Final Assembly Project - Seven Segment Display
+; NOTE: NEED TO INVERT BIC TO ORR
 ;
         THUMB
         AREA    |.text|, CODE, READONLY, ALIGN=2
@@ -70,7 +71,7 @@ disable_all     PROC
         BIC     R1, #seg_D
         BIC     R1, #seg_G
         STRB    R1, [R0]
-		
+
 		ENDP
 
 state_0 PROC
