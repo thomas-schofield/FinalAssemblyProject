@@ -59,7 +59,6 @@ main_loop
 
 loop
         ; Main loop that checks for button presses
-        MOV     R3, #0
         LDR     R0, =P1IN
         LDRB    R1, [R0]
         TST     R1, #btnINC
@@ -98,18 +97,17 @@ roll
 roll_s  CMP     R2, #7
         BLE     dec
         BGT     inc
-
-        B       loop
+		
+		B		loop
 
         MACRO
         SetState        $reg, $num
         CMP     $reg, #0x0$num
         BLEQ    state_$num
         BLEQ    delay
-        BEQ     next_step
+        BEQ.W   next_step
 
         MEND
-
 
 determine_state
         SetState        R2, 0
@@ -132,7 +130,8 @@ determine_state
         ; If everything else fails, reset to the beginning
         MOV     R2, #0
         BL      state_0
-        BLEQ    delay
+        BL      delay
+        MOV     R3, #0
         B       loop
 
 next_step
@@ -140,8 +139,8 @@ next_step
         BNE     loop
         CMPEQ   R2, #0
         BNE     roll_s
-        BEQ     loop
         MOVEQ   R3, #0
+        BEQ     loop
 
         B       loop
 
