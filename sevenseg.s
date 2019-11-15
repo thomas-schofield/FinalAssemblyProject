@@ -3,9 +3,6 @@
 ; Final Assembly Project - Seven Segment Display
 ; NOTE: NEED TO INVERT BIC TO ORR
 ;
-        THUMB
-        AREA    |.text|, CODE, READONLY, ALIGN=2
-        EXPORT  main_loop
 
 ; Setup Addresses
 ; Port 1
@@ -46,14 +43,31 @@ seg_E   EQU     0x40    ; E - P6.6
 seg_F   EQU     0x80    ; F - P6.7
 seg_G   EQU     0x08    ; G - P2.3
 
+        THUMB
+        AREA    |.text|, CODE, READONLY, ALIGN=2
+        EXPORT  main_loop
+
 main_loop
         ; Start the program
         BL      gpio_init
 
-loop
+        MOV     R2, #0
         BL      state_0
-        BL      delay
+
+loop
+        LDR     R0, =P1IN
+        LDRB    R1, [R0]
+        TST     R1, #btnINC
+        BEQ     inc_state
+
         B       loop
+
+inc_state
+        TST     R2, #0
+        BLEQ    state_1
+
+        B       loop
+
 
 disable_all     PROC
         ; Ensure the outputs are disabled
@@ -72,9 +86,29 @@ disable_all     PROC
         BIC     R1, #seg_G
         STRB    R1, [R0]
 
-		ENDP
+        BX      LR
+	ENDP
 
 state_0 PROC
+        LDR     R0, =P6OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_E
+        BIC     R1, #seg_F
+        STRB    R1, [R0]
+
+        LDR     R0, =P2OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_A
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
+        BIC     R1, #seg_D
+        ORR     R1, #seg_G
+        STRB    R1, [R0]
+
+        BX      LR
+        ENDP
+
+state_1 PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_E
@@ -84,30 +118,13 @@ state_0 PROC
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        ORR     R1, #seg_C
-        BIC     R1, #seg_D
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
+        ORR     R1, #seg_D
         ORR     R1, #seg_G
         STRB    R1, [R0]
 
-        ENDP
-
-state_1 PROC
-        LDR     R0, =P6OUT
-        LDRB    R1, [R0]
-        BIC     R1, #seg_E
-        ORR     R1, #seg_F
-        STRB    R1, [R0]
-
-        LDR     R0, =P2OUT
-        LDRB    R1, [R0]
-        BIC     R1, #seg_A
-        BIC     R1, #seg_B
-        ORR     R1, #seg_C
-        BIC     R1, #seg_D
-        BIC     R1, #seg_G
-        STRB    R1, [R0]
-
+        BX      LR
         ENDP
 
 state_2 PROC
@@ -119,24 +136,6 @@ state_2 PROC
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        BIC     R1, #seg_C
-        ORR     R1, #seg_D
-        ORR     R1, #seg_G
-        STRB    R1, [R0]
-
-        ENDP
-
-state_3 PROC
-        LDR     R0, =P6OUT
-        LDRB    R1, [R0]
-        BIC     R1, #seg_E
-        ORR     R1, #seg_F
-        STRB    R1, [R0]
-
-        LDR     R0, =P2OUT
-        LDRB    R1, [R0]
         BIC     R1, #seg_A
         BIC     R1, #seg_B
         ORR     R1, #seg_C
@@ -144,9 +143,10 @@ state_3 PROC
         BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
-state_4 PROC
+state_3 PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_E
@@ -157,11 +157,31 @@ state_4 PROC
         LDRB    R1, [R0]
         BIC     R1, #seg_A
         BIC     R1, #seg_B
-        ORR     R1, #seg_C
+        BIC     R1, #seg_C
+        BIC     R1, #seg_D
+        BIC     R1, #seg_G
+        STRB    R1, [R0]
+
+        BX      LR
+        ENDP
+
+state_4 PROC
+        LDR     R0, =P6OUT
+        LDRB    R1, [R0]
+        ORR     R1, #seg_E
+        BIC     R1, #seg_F
+        STRB    R1, [R0]
+
+        LDR     R0, =P2OUT
+        LDRB    R1, [R0]
+        ORR     R1, #seg_A
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
         ORR     R1, #seg_D
         BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 state_5 PROC
@@ -173,52 +193,36 @@ state_5 PROC
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        BIC     R1, #seg_B
-        ORR     R1, #seg_C
-        ORR     R1, #seg_D
-        ORR     R1, #seg_G
+        BIC     R1, #seg_A
+        ORR     R1, #seg_B
+        BIC     R1, #seg_C
+        BIC     R1, #seg_D
+        BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 state_6 PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_E
+        BIC     R1, #seg_E
         BIC     R1, #seg_F
         STRB    R1, [R0]
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_A
+        BIC     R1, #seg_A
         ORR     R1, #seg_B
-        ORR     R1, #seg_C
-        ORR     R1, #seg_D
-        ORR     R1, #seg_G
-        STRB    R1, [R0]
-
-        ENDP
-
-state_7 PROC
-        LDR     R0, =P6OUT
-        LDRB    R1, [R0]
-        BIC     R1, #seg_E
-        ORR     R1, #seg_F
-        STRB    R1, [R0]
-
-        LDR     R0, =P2OUT
-        LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        BIC     R1, #seg_B
-        ORR     R1, #seg_C
+        BIC     R1, #seg_C
         BIC     R1, #seg_D
         BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
-state_8 PROC
+state_7 PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_E
@@ -227,74 +231,78 @@ state_8 PROC
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        ORR     R1, #seg_C
+        BIC     R1, #seg_A
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
         ORR     R1, #seg_D
         ORR     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
+        ENDP
+
+state_8 PROC
+        LDR     R0, =P6OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_E
+        BIC     R1, #seg_F
+        STRB    R1, [R0]
+
+        LDR     R0, =P2OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_A
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
+        BIC     R1, #seg_D
+        BIC     R1, #seg_G
+        STRB    R1, [R0]
+
+        BX      LR
         ENDP
 
 state_9 PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_E
-        ORR     R1, #seg_F
+        BIC     R1, #seg_F
         STRB    R1, [R0]
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
         BIC     R1, #seg_A
         BIC     R1, #seg_B
-        ORR     R1, #seg_C
+        BIC     R1, #seg_C
         ORR     R1, #seg_D
-        ORR     R1, #seg_G
+        BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 state_A PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_E
-        ORR     R1, #seg_F
+        BIC     R1, #seg_E
+        BIC     R1, #seg_F
         STRB    R1, [R0]
 
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
         BIC     R1, #seg_A
-        ORR     R1, #seg_B
-        ORR     R1, #seg_C
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
         ORR     R1, #seg_D
-        ORR     R1, #seg_G
+        BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 
 state_B PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_E
-        BIC     R1, #seg_F
-        STRB    R1, [R0]
-
-        LDR     R0, =P2OUT
-        LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        ORR     R1, #seg_C
-        ORR     R1, #seg_D
-        BIC     R1, #seg_G
-        STRB    R1, [R0]
-
-        ENDP
-
-state_C PROC
-        LDR     R0, =P6OUT
-        LDRB    R1, [R0]
-        ORR     R1, #seg_E
+        BIC     R1, #seg_E
         BIC     R1, #seg_F
         STRB    R1, [R0]
 
@@ -304,9 +312,29 @@ state_C PROC
         ORR     R1, #seg_B
         BIC     R1, #seg_C
         BIC     R1, #seg_D
+        BIC     R1, #seg_G
+        STRB    R1, [R0]
+
+        BX      LR
+        ENDP
+
+state_C PROC
+        LDR     R0, =P6OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_E
+        BIC     R1, #seg_F
+        STRB    R1, [R0]
+
+        LDR     R0, =P2OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_A
+        ORR     R1, #seg_B
+        ORR     R1, #seg_C
+        BIC     R1, #seg_D
         ORR     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 state_D PROC
@@ -319,36 +347,19 @@ state_D PROC
         LDR     R0, =P2OUT
         LDRB    R1, [R0]
         ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        ORR     R1, #seg_C
-        ORR     R1, #seg_D
+        BIC     R1, #seg_B
+        BIC     R1, #seg_C
+        BIC     R1, #seg_D
         BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
         ENDP
 
 state_E PROC
         LDR     R0, =P6OUT
         LDRB    R1, [R0]
-        ORR     R1, #seg_E
-        ORR     R1, #seg_F
-        STRB    R1, [R0]
-
-        LDR     R0, =P2OUT
-        LDRB    R1, [R0]
-        ORR     R1, #seg_A
-        ORR     R1, #seg_B
-        BIC     R1, #seg_C
-        ORR     R1, #seg_D
-        BIC     R1, #seg_G
-        STRB    R1, [R0]
-
-        ENDP
-
-state_F PROC
-        LDR     R0, =P6OUT
-        LDRB    R1, [R0]
-        ORR     R1, #seg_E
+        BIC     R1, #seg_E
         BIC     R1, #seg_F
         STRB    R1, [R0]
 
@@ -356,19 +367,39 @@ state_F PROC
         LDRB    R1, [R0]
         BIC     R1, #seg_A
         ORR     R1, #seg_B
-        BIC     R1, #seg_C
-        ORR     R1, #seg_D
-        ORR     R1, #seg_G
+        ORR     R1, #seg_C
+        BIC     R1, #seg_D
+        BIC     R1, #seg_G
         STRB    R1, [R0]
 
+        BX      LR
+        ENDP
+
+state_F PROC
+        LDR     R0, =P6OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_E
+        BIC     R1, #seg_F
+        STRB    R1, [R0]
+
+        LDR     R0, =P2OUT
+        LDRB    R1, [R0]
+        BIC     R1, #seg_A
+        ORR     R1, #seg_B
+        ORR     R1, #seg_C
+        ORR     R1, #seg_D
+        BIC     R1, #seg_G
+        STRB    R1, [R0]
+
+        BX      LR
         ENDP
 
 delay   PROC
-	LDR	R5, =250000
+        LDR     R5, =500000
 L1      SUBS    R5, #1  ; Subtract 1 from delay counter
-	BNE     L1      ; Loop if the value is not equal to zero
-	BX      LR      ; Return to the normal program if it is equal to zero
-	ENDP
+        BNE     L1      ; Loop if the value is not equal to zero
+        BX      LR      ; Return to the normal program if it is equal to zero
+        ENDP
 
 gpio_init       PROC
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -377,7 +408,7 @@ gpio_init       PROC
         ; Make P1.1 and P1.4 Inputs
         LDR     R0, =P1DIR
         LDRB    R1, [R0]
-        BIC     R1, #0x12        ; P1.1 & P1.4 tnputs
+        BIC     R1, #0x12        ; P1.1 & P1.4 inputs
         STRB    R1, [R0]
 
         LDR     R0, =P1REN
