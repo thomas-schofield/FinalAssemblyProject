@@ -43,6 +43,9 @@ seg_E   EQU     0x40    ; E - P6.6
 seg_F   EQU     0x80    ; F - P6.7
 seg_G   EQU     0x08    ; G - P2.3
 
+UP      EQU     0x01
+DOWN    EQU     0x00
+
         THUMB
         AREA    |.text|, CODE, READONLY, ALIGN=2
         EXPORT  main_loop
@@ -55,19 +58,130 @@ main_loop
         BL      state_0
 
 loop
+        ; Main loop that checks for button presses
         LDR     R0, =P1IN
         LDRB    R1, [R0]
         TST     R1, #btnINC
-        BEQ     inc_state
+        BEQ     inc
+        TSTNE   R1, #btnDEC
+        BEQ     dec
+
+        LDR     R0, =P3IN
+        LDRB    R1, [R0]
+        TST     R1, #btnROLL
+        BEQ.W   roll
+
+        B       loop
+        LTORG
+
+        MACRO
+$label  NextBranch      $curr, $dir
+$label  MOV     R0, $dir
+        CMP     R0, #UP
+        ADDEQ   $curr, $curr, #1
+        SUBNE   $curr, $curr, #1
+        MEND
+
+inc     NextBranch      R2, #UP
+        CMP     R2, #15
+        MOVGT   R2, #0
+        B	determine_state
+
+dec     NextBranch      R2, #DOWN
+        CMP     R2, #0
+        MOVLT   R2, #15
+        B       determine_state
+
+roll
 
         B       loop
 
-inc_state
-        TST     R2, #0
+determine_state
+        CMP     R2, #0
+        BLEQ    state_0
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #1
         BLEQ    state_1
+        BLEQ    delay
+        BEQ     loop
 
+        CMP     R2, #2
+        BLEQ    state_2
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #3
+        BLEQ    state_3
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #4
+        BLEQ    state_4
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #5
+        BLEQ    state_5
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #6
+        BLEQ    state_6
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #7
+        BLEQ    state_7
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #8
+        BLEQ    state_8
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #9
+        BLEQ    state_9
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #10
+        BLEQ    state_A
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #11
+        BLEQ    state_B
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #12
+        BLEQ    state_C
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #13
+        BLEQ    state_D
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #14
+        BLEQ    state_E
+        BLEQ    delay
+        BEQ     loop
+
+        CMP     R2, #15
+        BLEQ    state_F
+        BLEQ    delay
+        BEQ     loop
+
+        ; If everything else fails, reset to the beginning
+        MOV     R2, #0
+        BL      state_0
+        BLEQ    delay
         B       loop
-
 
 disable_all     PROC
         ; Ensure the outputs are disabled
