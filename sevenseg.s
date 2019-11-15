@@ -59,6 +59,7 @@ main_loop
 
 loop
         ; Main loop that checks for button presses
+        MOV     R3, #0
         LDR     R0, =P1IN
         LDRB    R1, [R0]
         TST     R1, #btnINC
@@ -93,94 +94,55 @@ dec     NextBranch      R2, #DOWN
         B       determine_state
 
 roll
+        MOV     R3, #1
+roll_s  CMP     R2, #7
+        BLE     dec
+        BGT     inc
 
         B       loop
 
+        MACRO
+        SetState        $reg, $num
+        CMP     $reg, #0x0$num
+        BLEQ    state_$num
+        BLEQ    delay
+        BEQ     next_step
+
+        MEND
+
+
 determine_state
-        CMP     R2, #0
-        BLEQ    state_0
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #1
-        BLEQ    state_1
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #2
-        BLEQ    state_2
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #3
-        BLEQ    state_3
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #4
-        BLEQ    state_4
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #5
-        BLEQ    state_5
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #6
-        BLEQ    state_6
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #7
-        BLEQ    state_7
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #8
-        BLEQ    state_8
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #9
-        BLEQ    state_9
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #10
-        BLEQ    state_A
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #11
-        BLEQ    state_B
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #12
-        BLEQ    state_C
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #13
-        BLEQ    state_D
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #14
-        BLEQ    state_E
-        BLEQ    delay
-        BEQ     loop
-
-        CMP     R2, #15
-        BLEQ    state_F
-        BLEQ    delay
-        BEQ     loop
+        SetState        R2, 0
+        SetState        R2, 1
+        SetState        R2, 2
+        SetState        R2, 3
+        SetState        R2, 4
+        SetState        R2, 5
+        SetState        R2, 6
+        SetState        R2, 7
+        SetState        R2, 8
+        SetState        R2, 9
+        SetState        R2, A
+        SetState        R2, B
+        SetState        R2, C
+        SetState        R2, D
+        SetState        R2, E
+        SetState        R2, F
 
         ; If everything else fails, reset to the beginning
         MOV     R2, #0
         BL      state_0
         BLEQ    delay
+        B       loop
+
+next_step
+        CMP     R3, #1
+        BNE     loop
+        CMPEQ   R2, #0
+        BNE     roll_s
+        BEQ     loop
+        MOVEQ   R3, #0
+
         B       loop
 
 disable_all     PROC
