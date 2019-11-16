@@ -1,2 +1,8 @@
 Objects/
 Listings/
+
+# Keil uVision Ignores
+*.uvguix.*
+*.uvoptx
+
+*.scvd
